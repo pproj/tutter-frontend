@@ -1,5 +1,9 @@
 import Vue from 'vue'
+import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import { createPinia, PiniaVuePlugin } from 'pinia'
+
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 import App from './App.vue'
 import router from './router'
@@ -7,6 +11,8 @@ import router from './router'
 import './assets/main.css'
 
 Vue.use(PiniaVuePlugin)
+Vue.use(BootstrapVue)
+Vue.use(IconsPlugin)
 
 new Vue({
   router,
