@@ -8,8 +8,6 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import App from './App.vue'
 import router from './router'
 
-import './assets/main.css'
-
 Vue.use(PiniaVuePlugin)
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)

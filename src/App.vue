@@ -1,86 +1,53 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div id="app">
-    <header>
-      <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-      <div class="wrapper">
-        <HelloWorld msg="You did it!" />
-
-        <nav>
-          <router-link to="/">Home</router-link>
-          <router-link to="/about">About</router-link>
-        </nav>
-      </div>
-    </header>
-
-    <router-view />
-  </div>
+    <div id="app">
+        <b-container>
+            <b-row class="d-xl-none">
+                <b-col class="my-2">
+                    <b-link :to="{ name: 'home' }">
+                        <img src="@/assets/tutter_with_text.svg" alt="Tutter logo" height="50px"/>
+                    </b-link>
+                    <b>@marcsello</b>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col lg="3" class="bv-d-lg-down-none">
+                    <div id="sidebarContainer">
+                        <tutter-sidebar/>
+                        <div id="tutterFooter" class="text-center">
+                            Carefully crafted for <b-link href="https://pproj.net">PP 2023</b-link><br>
+                            <b-link href="/api">API Docs</b-link>
+                        </div>
+                    </div>
+                </b-col>
+                <b-col lg="9">
+                    <router-view/>
+                </b-col>
+            </b-row>
+        </b-container>
+    </div>
 </template>
 
+<script>
+import {defineComponent} from "vue";
+import TutterSidebar from "@/components/TutterSidebar.vue";
+
+export default defineComponent({
+    components: {TutterSidebar}
+})
+</script>
+
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+div#sidebarContainer {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    height: 100vh;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+div#tutterFooter {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    z-index: -10;
 }
 </style>
