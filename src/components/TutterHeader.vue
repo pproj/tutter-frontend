@@ -1,15 +1,18 @@
 <template>
-    <div>
-        <div style="background-color: white">
-            <div class="py-5 text-right">
+    <b-container class="d-lg-none">
+        <b-row>
+            <b-col class="my-2">
                 <b-link :to="{ name: 'home' }">
-                    <img src="@/assets/tutter_with_text.svg" alt="Tutter logo" class="w-100"/>
+                    <img src="@/assets/tutter_with_text.svg" alt="Tutter logo" height="50px"/>
                 </b-link>
+            </b-col>
+            <b-col class="align-self-center text-right">
                 <b>@marcsello</b>
-            </div>
-            <div class="py-5">
-                <h2>Trending tags</h2>
-                <div id="trendingTagsHolder" class="w-100 text-wrap text-justify">
+            </b-col>
+        </b-row>
+        <b-row>
+            <b-col class="my-2">
+                <div class="w-100 text-wrap text-justify">
                     <b-link>#lofasz </b-link>
                     <b-link>#lofas </b-link>
                     <b-link>#lof </b-link>
@@ -29,27 +32,17 @@
                     <b-link>#lofaasz </b-link>
                     <b-link>#lofaaasz </b-link>
                 </div>
-            </div>
-        </div>
-        <div id="tutterFooter" class="text-center">
-            Carefully crafted for <b-link href="https://pproj.net">PP 2023</b-link>
-            <br>
-            <small><b-link href="/api">API Docs</b-link> | asd | asd</small>
-        </div>
-    </div>
+            </b-col>
+        </b-row>
+    </b-container>
 </template>
 
 <script>
 export default {
-    name: "TutterSidebar"
+    name: "TutterHeader"
 }
 </script>
 
 <style scoped>
-div#tutterFooter {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    z-index: -10;
-}
+
 </style>
