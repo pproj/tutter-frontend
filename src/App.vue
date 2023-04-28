@@ -9,7 +9,7 @@
                     </div>
                 </b-col>
                 <b-col lg="9">
-                    <router-view/>
+                    <router-view :key="$route.fullPath"/>
                 </b-col>
             </b-row>
         </b-container>
