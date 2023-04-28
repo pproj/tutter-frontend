@@ -1,5 +1,8 @@
 <template>
-    <div id="postsHolder">
+    <div>
+        <div class="my-3 text-center" v-if="livingInPast">
+            <b-button block variant="primary">Back to the future!</b-button>
+        </div>
         <b-card class="my-3" v-for="post in posts" :key="post.id">
             <template #header>
                 <b-link class="postAuthor" :to="{name: 'author', params: { id: post.author.id }}">@{{ post.author.name }}</b-link>
@@ -11,6 +14,9 @@
         </b-card>
         <div class="my-3 text-center" v-if="loading">
             <b-spinner variant="secondary"/>
+        </div>
+        <div class="my-3 text-center" v-if="!shouldLoadMore">
+            <b-button block variant="primary">Load older posts</b-button>
         </div>
     </div>
 </template>
@@ -24,12 +30,16 @@ export default {
             default() {
                 return {}
             }
+        },
+        olderThan: {
+            type: Number,
+            default: null
         }
     },
     data() {
         return {
             loading: false,
-            lastId: 0,
+            lastId: this.olderThan || 0, // <- initial value
             posts: [
                 {
                     "id": 1,
@@ -81,14 +91,14 @@ export default {
     },
     methods: {
         onScroll() {
-            const remaining = document.documentElement.scrollHeight - (document.documentElement.scrollTop + document.documentElement.clientHeight)
-            if (remaining < 50 && !this.loading) {
+            const remainingPx = document.documentElement.scrollHeight - (document.documentElement.scrollTop + document.documentElement.clientHeight)
+            if (remainingPx < 50 && !this.loading && this.shouldLoadMore) {
                 this.triggerLoad()
             }
         },
         triggerLoad() {
             return new Promise((resolve) => {
-                if (this.loading) {
+                if (this.loading || !this.shouldLoadMore) {
                     resolve()
                     return
                 }
@@ -102,6 +112,15 @@ export default {
         },
         cleanup() {
             // TODO: Figure out out of focus posts
+            // TODO: Remove old posts not in focus
+        }
+    },
+    computed: {
+        shouldLoadMore() {
+            return this.posts.length < 250
+        },
+        livingInPast() {
+            return this.olderThan !== null
         }
     }
 }
