@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="my-3 text-center" v-if="livingInPast">
-            <b-button block variant="primary">Back to the future!</b-button>
+            <b-button block variant="primary" @click="onBackToTheFutureClicked">Back to the future!</b-button>
         </div>
         <b-card class="my-3" v-for="post in posts" :key="post.id">
             <template #header>
@@ -16,7 +16,7 @@
             <b-spinner variant="secondary"/>
         </div>
         <div class="my-3 text-center" v-if="!shouldLoadMore">
-            <b-button block variant="primary">Load older posts</b-button>
+            <b-button block variant="primary" @click="onLoadOlderClicked">Load older posts</b-button>
         </div>
     </div>
 </template>
@@ -34,11 +34,15 @@ export default {
         olderThan: {
             type: Number,
             default: null
+        },
+        maxPosts: {
+            type: Number,
+            default: 250
         }
     },
     data() {
         return {
-            loading: false,
+            loading: true,
             lastId: this.olderThan || 0, // <- initial value
             posts: [
                 {
@@ -73,7 +77,7 @@ export default {
         }
     },
     mounted() {
-        this.triggerLoad().then(() => { // <- trigger initial load
+        this.triggerLoad(true).then(() => { // <- trigger initial load
             window.addEventListener('scroll', this.onScroll)
         })
     },
@@ -96,11 +100,13 @@ export default {
                 this.triggerLoad()
             }
         },
-        triggerLoad() {
+        triggerLoad(force) {
             return new Promise((resolve) => {
-                if (this.loading || !this.shouldLoadMore) {
-                    resolve()
-                    return
+                if (!force) {
+                    if (this.loading || !this.shouldLoadMore) {
+                        resolve()
+                        return
+                    }
                 }
                 this.loading = true
                 this.posts.push(
@@ -113,14 +119,41 @@ export default {
         cleanup() {
             // TODO: Figure out out of focus posts
             // TODO: Remove old posts not in focus
+        },
+        onLoadOlderClicked() {
+            // TODO: throw up
+        },
+        onBackToTheFutureClicked() {
+            // TODO: go upstairs
+        },
+        restart() {
+            this.loading = true
+            window.removeEventListener('scroll', this.onScroll)
+            window.scrollTo(0,0) // go upstairs
+            this.posts = []
+            this.lastId = this.olderThan || 0
+            this.triggerLoad(true).then(() => { // <- trigger initial load
+                window.addEventListener('scroll', this.onScroll)
+            })
         }
     },
     computed: {
         shouldLoadMore() {
-            return this.posts.length < 250
+            return this.posts.length < this.maxPosts
         },
         livingInPast() {
             return this.olderThan !== null
+        }
+    },
+    watch: {
+        filters: {
+            deep: true,
+            handler() {
+                this.restart()
+            }
+        },
+        olderThan() {
+            this.restart()
         }
     }
 }

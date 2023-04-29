@@ -5,12 +5,13 @@
                 <b-link :to="{ name: 'home' }">
                     <img src="@/assets/tutter_with_text.svg" alt="Tutter logo" class="w-100"/>
                 </b-link>
-                <b>@marcsello</b>
+                <b v-if="user.isUsernameSet">@{{ user.username }}</b>
+                <div v-else>&nbsp;</div> <!-- webdesign is my passion -->
             </div>
             <div class="py-5">
                 <h2>Trending tags</h2>
                 <div id="trendingTagsHolder" class="w-100 text-wrap text-justify">
-                    <b-link>#lofasz </b-link>
+                    <b-link :to="{name: 'tag', params: {tag: 'lofasz'}}">#lofasz </b-link>
                     <b-link>#lofas </b-link>
                     <b-link>#lof </b-link>
                     <b-link>#lofsz </b-link>
@@ -32,16 +33,25 @@
             </div>
         </div>
         <div id="tutterFooter" class="text-center">
-            Carefully crafted for <b-link href="https://pproj.net">PP 2023</b-link>
+            Carefully crafted for
+            <b-link href="https://pproj.net">PP 2023</b-link>
             <br>
-            <small><b-link href="/api">API Docs</b-link> | asd | asd</small>
+            <small>
+                <b-link href="/api">API Docs</b-link>
+            </small>
         </div>
     </div>
 </template>
 
 <script>
+import {useUserStore} from "@/stores/user";
+
 export default {
-    name: "TutterSidebar"
+    name: "TutterSidebar",
+    setup() { // bele kéne szarni az egészbe...
+        return {user: useUserStore()}
+    },
+
 }
 </script>
 

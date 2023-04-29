@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <tutter-header />
+        <tutter-header class="d-lg-none" />
         <b-container>
             <b-row>
                 <b-col lg="3" class="bv-d-md-down-none">

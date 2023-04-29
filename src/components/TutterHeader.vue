@@ -1,13 +1,13 @@
 <template>
-    <b-container class="d-lg-none">
+    <b-container>
         <b-row>
             <b-col class="my-2">
                 <b-link :to="{ name: 'home' }">
                     <img src="@/assets/tutter_with_text.svg" alt="Tutter logo" height="50px"/>
                 </b-link>
             </b-col>
-            <b-col class="align-self-center text-right">
-                <b>@marcsello</b>
+            <b-col v-if="user.isUsernameSet" class="align-self-center text-right">
+                <b>@{{ user.username }}</b>
             </b-col>
         </b-row>
         <b-row>
@@ -38,8 +38,13 @@
 </template>
 
 <script>
+import {useUserStore} from "@/stores/user";
+
 export default {
-    name: "TutterHeader"
+    name: "TutterHeader",
+    setup() { // bele kéne szarni az egészbe...
+        return {user: useUserStore()}
+    },
 }
 </script>
 
