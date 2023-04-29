@@ -31,7 +31,8 @@ export default {
         }
     },
     mounted() {
-        console.log(this.tag)
+        // TODO: check if tag exists
+        // TODO: if yes, start fetching posts
     }
 }
 </script>

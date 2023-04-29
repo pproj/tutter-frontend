@@ -6,12 +6,12 @@
                         id="create-new-post-textarea"
                         placeholder="What's on your mind...?"
                         v-model="newPostText"
-                        maxlength="160"
+                        :maxlength="maxLength"
                 />
             </b-form-group>
 
             <div class="text-right">
-                <span class="text-muted mx-2">{{ newPostText.length }}/160</span>&nbsp;
+                <span class="text-muted mx-2">{{ newPostText.length }}/{{ maxLength }}</span>&nbsp;
                 <b-button variant="primary" @click="attemptPost" :disabled="!postGood">Post</b-button>
             </div>
 
@@ -24,6 +24,12 @@ import {useUserStore} from "@/stores/user";
 
 export default {
     name: "NewPost",
+    props: {
+        maxLength: {
+            type: Number,
+            default: 260
+        }
+    },
     setup() { // bele kéne szarni az egészbe...
         return {user: useUserStore()}
     },
@@ -59,7 +65,7 @@ export default {
     },
     computed: {
         postGood() {
-            return this.newPostText.length > 0 && this.newPostText.length <= 160 && !this.postingInProgress && this.user.isUsernameSet
+            return this.newPostText.length > 0 && this.newPostText.length <= this.maxLength && !this.postingInProgress && this.user.isUsernameSet
         }
     }
 }

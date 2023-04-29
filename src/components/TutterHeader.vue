@@ -1,5 +1,8 @@
 <template>
     <b-container>
+        <b-modal id="registerModal" title="Get started..." hide-footer>
+            <register-form @registered="onRegistered" />
+        </b-modal>
         <b-row>
             <b-col class="my-2">
                 <b-link :to="{ name: 'home' }">
@@ -8,6 +11,9 @@
             </b-col>
             <b-col v-if="user.isUsernameSet" class="align-self-center text-right">
                 <b>@{{ user.username }}</b>
+            </b-col>
+            <b-col v-else class="align-self-center text-right">
+                <b-link @click="onRegisterClicked"><b>Register!</b></b-link>
             </b-col>
         </b-row>
         <b-row>
@@ -39,12 +45,25 @@
 
 <script>
 import {useUserStore} from "@/stores/user";
+import RegisterCard from "@/components/RegisterForm.vue";
+import RegisterForm from "@/components/RegisterForm.vue";
 
 export default {
     name: "TutterHeader",
+    components: {RegisterForm, RegisterCard},
     setup() { // bele kéne szarni az egészbe...
         return {user: useUserStore()}
     },
+    methods: {
+        onRegisterClicked() {
+            if (!this.user.isUsernameSet) {
+                this.$bvModal.show("registerModal")
+            }
+        },
+        onRegistered() {
+            this.$bvModal.hide("registerModal")
+        }
+    }
 }
 </script>
 

@@ -32,6 +32,11 @@
                 </div>
             </div>
         </div>
+        <div v-if="!user.isUsernameSet" id="register">
+            <b-card title="Get started...">
+                <register-form/>
+            </b-card>
+        </div>
         <div id="tutterFooter" class="text-center">
             Carefully crafted for
             <b-link href="https://pproj.net">PP 2023</b-link>
@@ -45,9 +50,11 @@
 
 <script>
 import {useUserStore} from "@/stores/user";
+import RegisterForm from "@/components/RegisterForm.vue";
 
 export default {
     name: "TutterSidebar",
+    components: {RegisterForm},
     setup() { // bele kéne szarni az egészbe...
         return {user: useUserStore()}
     },

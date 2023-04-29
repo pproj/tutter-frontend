@@ -23,13 +23,15 @@ export default {
     data() {
         return {
             authorExists: null,
-            authorId: null,
+            authorId: this.$route.params.id,
             authorData: {
                 "id": null,
                 "first_seen": null,
                 "name": null
             }
         }
+    },
+    mounted() {
     }
 }
 </script>
