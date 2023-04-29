@@ -1,11 +1,11 @@
 <template>
     <div id="app">
-        <tutter-header class="d-lg-none" />
+        <tutter-header class="d-lg-none" :register-allowed="!isPresentationMode" />
         <b-container>
             <b-row>
                 <b-col lg="3" class="bv-d-md-down-none">
                     <div id="sidebarContainer">
-                        <tutter-sidebar/>
+                        <tutter-sidebar :register-allowed="!isPresentationMode"/>
                     </div>
                 </b-col>
                 <b-col lg="9">
@@ -22,7 +22,12 @@ import TutterSidebar from "@/components/TutterSidebar.vue";
 import TutterHeader from "@/components/TutterHeader.vue";
 
 export default defineComponent({
-    components: {TutterHeader, TutterSidebar}
+    components: {TutterHeader, TutterSidebar},
+    computed: {
+        isPresentationMode() {
+            return this.$route.name === 'presentation'
+        }
+    }
 })
 </script>
 

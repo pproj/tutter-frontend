@@ -12,7 +12,7 @@
             <b-col v-if="user.isUsernameSet" class="align-self-center text-right">
                 <b>@{{ user.username }}</b>
             </b-col>
-            <b-col v-else class="align-self-center text-right">
+            <b-col v-else-if="registerAllowed" class="align-self-center text-right">
                 <b-link @click="onRegisterClicked"><b>Register!</b></b-link>
             </b-col>
         </b-row>
@@ -51,12 +51,18 @@ import RegisterForm from "@/components/RegisterForm.vue";
 export default {
     name: "TutterHeader",
     components: {RegisterForm, RegisterCard},
+    props: {
+        registerAllowed: {
+            type: Boolean,
+            default: true
+        }
+    },
     setup() { // bele kéne szarni az egészbe...
         return {user: useUserStore()}
     },
     methods: {
         onRegisterClicked() {
-            if (!this.user.isUsernameSet) {
+            if (!this.user.isUsernameSet && this.registerAllowed) {
                 this.$bvModal.show("registerModal")
             }
         },

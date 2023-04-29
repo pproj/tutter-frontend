@@ -32,7 +32,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="!user.isUsernameSet" id="register">
+        <div v-if="!user.isUsernameSet && registerAllowed" id="register">
             <b-card title="Get started...">
                 <register-form/>
             </b-card>
@@ -55,6 +55,12 @@ import RegisterForm from "@/components/RegisterForm.vue";
 export default {
     name: "TutterSidebar",
     components: {RegisterForm},
+    props: {
+        registerAllowed: {
+            type: Boolean,
+            default: true
+        }
+    },
     setup() { // bele kéne szarni az egészbe...
         return {user: useUserStore()}
     },

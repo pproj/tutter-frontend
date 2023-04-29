@@ -1,7 +1,7 @@
 <template>
     <main v-if="tagExists === true" >
         <div class="my-5">
-            <h1>#{{ tagData.name }}</h1>
+            <h1>#{{ tagData.tag }}</h1>
         </div>
         <posts :filters="{'tag': tag}" />
     </main>
@@ -31,8 +31,20 @@ export default {
         }
     },
     mounted() {
-        // TODO: check if tag exists
-        // TODO: if yes, start fetching posts
+        this.$api.get("tag/" + this.tag, { params: { fill: false } }).then((resp) => {
+            if (resp.status === 200) {
+                this.tagData = resp.data
+                this.tagExists = true
+            } else {
+                this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
+            }
+        }).catch((err) => {
+            if (err.code === "ERR_BAD_REQUEST" && err.response.status === 404) {
+                this.tagExists = false
+            } else {
+                this.$showToast(err.message)
+            }
+        })
     }
 }
 </script>
