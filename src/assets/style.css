@@ -1,3 +1,10 @@
 main.loweredMain {
     padding-top: 25vh;
 }
+
+.veryOldPostWarning {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}

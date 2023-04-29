@@ -15,13 +15,19 @@
         <div class="my-3 text-center" v-if="loading">
             <b-spinner variant="secondary"/>
         </div>
-        <div class="my-3 text-center" v-if="!shouldLoadMore">
+        <div class="my-3 text-center" v-if="!reachedOldest && !shouldAutoLoadMore">
             <b-button block variant="primary" @click="onLoadOlderClicked">Load older posts</b-button>
+        </div>
+        <div class="my-3 text-center" v-if="reachedOldest">
+            <span class="text-muted">You are at the beginning of the time, universe and everything...</span>
         </div>
     </div>
 </template>
 
 <script>
+
+const BATCH_SIZE = 25
+
 export default {
     name: "Posts",
     props: {
@@ -42,38 +48,11 @@ export default {
     },
     data() {
         return {
+            lastScrollTop: 0,
             loading: true,
-            lastId: this.olderThan || 0, // <- initial value
-            posts: [
-                {
-                    "id": 1,
-                    "created_at": "2023-04-28T22:29:48.441328+02:00",
-                    "text": "asd #retek",
-                    "author": {"id": 1, "first_seen": "2023-04-28T22:29:48.441328+02:00", "name": "asd"},
-                    "tags": ["retek"]
-                },
-                {
-                    "id": 2,
-                    "created_at": "2023-04-28T22:30:02.415037+02:00",
-                    "text": "asdasdasd",
-                    "author": {"id": 2, "first_seen": "2023-04-28T22:30:02.415037+02:00", "name": "asdasd"},
-                    "tags": []
-                },
-                {
-                    "id": 3,
-                    "created_at": "2023-04-28T22:30:02.415037+02:00",
-                    "text": "asdasdasd",
-                    "author": {"id": 2, "first_seen": "2023-04-28T22:30:02.415037+02:00", "name": "asdasd"},
-                    "tags": []
-                },
-                {
-                    "id": 4,
-                    "created_at": "2023-04-28T22:30:02.415037+02:00",
-                    "text": "asdasdasd",
-                    "author": {"id": 2, "first_seen": "2023-04-28T22:30:02.415037+02:00", "name": "asdasd"},
-                    "tags": []
-                }
-            ]
+            lastId: this.olderThan || null, // <- initial value
+            posts: [],
+            reachedOldest: false
         }
     },
     mounted() {
@@ -95,51 +74,100 @@ export default {
     },
     methods: {
         onScroll() {
+            if (this.lastScrollTop > document.documentElement.scrollTop) {
+                return // the user is going upstairs...
+            }
+            this.lastScrollTop = document.documentElement.scrollTop
+
+            // The user is going downstairs, may trigger load now...
             const remainingPx = document.documentElement.scrollHeight - (document.documentElement.scrollTop + document.documentElement.clientHeight)
-            if (remainingPx < 50 && !this.loading && this.shouldLoadMore) {
+            if (remainingPx < 100 && !this.loading && this.shouldAutoLoadMore) {
                 this.triggerLoad()
             }
         },
-        triggerLoad(force) {
+        triggerLoad(force = false) {
             return new Promise((resolve) => {
                 if (!force) {
-                    if (this.loading || !this.shouldLoadMore) {
+                    if (this.loading || !this.shouldAutoLoadMore) {
                         resolve()
                         return
                     }
                 }
                 this.loading = true
-                this.posts.push(
-                    ...this.posts
-                )
-                this.loading = false
-                resolve()
+
+                // compile params
+                let params = Object.assign({}, this.filters) // this is a shallow copy
+
+                if (this.lastId !== null) {
+                    params['before_id'] = this.lastId
+                }
+
+                params['limit'] = BATCH_SIZE
+                params['order'] = 'desc'
+
+                this.$api.get("post",{params: params}).then((resp) => {
+
+                    if (resp.status !== 200) {
+                        this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
+                        return
+                    }
+
+                    if (resp.data.length > 0) {
+
+                        this.posts.push(...resp.data)
+
+                        // store "oldest" id ever seen
+                        let smallestId = +Infinity
+                        resp.data.forEach((p) => {
+                            if (p.id < smallestId) {
+                                smallestId = p.id
+                            }
+                        })
+                        if (this.lastId === null || smallestId < this.lastId) {
+                            this.lastId = smallestId
+                        }
+
+                    }
+
+                    if (resp.data.length < BATCH_SIZE) {
+                        this.reachedOldest = true
+                    }
+
+                    // done \o/
+                    this.loading = false
+                    resolve()
+                }).catch((err) => {
+                    this.$showToast(err.message)
+                })
             })
         },
         cleanup() {
             // TODO: Figure out out of focus posts
             // TODO: Remove old posts not in focus
+            // TODO: Clear reachedOldest
         },
         onLoadOlderClicked() {
-            // TODO: throw up
+            this.$emit("olderRequested", this.lastId)
         },
         onBackToTheFutureClicked() {
-            // TODO: go upstairs
+            this.$emit("recentRequested")
         },
         restart() {
             this.loading = true
             window.removeEventListener('scroll', this.onScroll)
             window.scrollTo(0,0) // go upstairs
+            this.lastScrollTop = 0
             this.posts = []
-            this.lastId = this.olderThan || 0
+            this.lastId = this.olderThan || null
+            this.reachedOldest = false
             this.triggerLoad(true).then(() => { // <- trigger initial load
                 window.addEventListener('scroll', this.onScroll)
             })
         }
     },
     computed: {
-        shouldLoadMore() {
-            return this.posts.length < this.maxPosts
+        shouldAutoLoadMore() {
+            return this.posts.length < this.maxPosts && !this.reachedOldest
         },
         livingInPast() {
             return this.olderThan !== null

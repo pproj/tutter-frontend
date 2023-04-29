@@ -3,7 +3,10 @@
         <div class="my-5">
             <h1>#{{ tagData.tag }}</h1>
         </div>
-        <posts :filters="{'tag': tag}" />
+        <b-alert :show="livingInPast" variant="warning" class="veryOldPostWarning">
+            You are currently viewing very old posts!
+        </b-alert>
+        <posts :filters="{'tag': tag}" :older-than="olderThanId" @olderRequested="onOlderRequested" @recentRequested="onRecentRequested" />
     </main>
     <main v-else-if="tagExists === false" class="loweredMain">
         <not-found-art text="It seems like no one used this tag before"/>
@@ -45,6 +48,26 @@ export default {
                 this.$showToast(err.message)
             }
         })
+    },
+    methods: {
+        onOlderRequested(olderThanId) {
+            this.$router.push({name: 'tag', params: { tag: this.tag }, query: { olderThan: olderThanId }})
+        },
+        onRecentRequested() {
+            this.$router.push({name: 'tag', params: { tag: this.tag }})
+        }
+    },
+    computed: {
+        olderThanId() {
+            if (this.$route.query.olderThan === undefined) {
+                return null
+            } else {
+                return parseInt(this.$route.query.olderThan, 10)
+            }
+        },
+        livingInPast() {
+            return this.olderThanId !== null
+        }
     }
 }
 </script>
