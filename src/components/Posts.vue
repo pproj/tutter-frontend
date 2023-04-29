@@ -3,15 +3,7 @@
         <div class="my-3 text-center" v-if="livingInPast">
             <b-button block variant="primary" @click="onBackToTheFutureClicked">Back to the future!</b-button>
         </div>
-        <b-card class="my-3" v-for="post in posts" :key="post.id">
-            <template #header>
-                <b-link class="postAuthor" :to="{name: 'author', params: { id: post.author.id }}">@{{ post.author.name }}</b-link>
-                <span class="text-muted float-right">{{ post.created_at | dateformat }}</span>
-            </template>
-            <b-card-body class="postText">
-                {{ post.text }}
-            </b-card-body>
-        </b-card>
+        <single-post-card class="my-3" v-for="post in posts" :key="post.id" :post-data="post"/>
         <div class="my-3 text-center" v-if="loading">
             <b-spinner variant="secondary"/>
         </div>
@@ -26,10 +18,13 @@
 
 <script>
 
+import SinglePostCard from "@/components/SinglePostCard.vue";
+
 const BATCH_SIZE = 25
 
 export default {
     name: "Posts",
+    components: {SinglePostCard},
     props: {
         filters: {
             type: Object,
@@ -62,15 +57,6 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('scroll', this.onScroll)
-    },
-    filters: {
-        dateformat(value) {
-            if (value) {
-                return (new Date(value)).toLocaleString("HU-hu")
-            } else {
-                return ""
-            }
-        }
     },
     methods: {
         onScroll() {
@@ -186,15 +172,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.postText {
-    font-size: 1.15em;
-}
-
-.postAuthor {
-    font-weight: bold;
-    /* text-decoration: underline; */
-    color: black;
-}
-</style>
