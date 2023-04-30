@@ -7,12 +7,19 @@
                         placeholder="What's on your mind...?"
                         v-model="newPostText"
                         :maxlength="maxLength"
+                        v-on:keyup.ctrl.enter="attemptPost"
                 />
             </b-form-group>
-
             <div class="text-right">
                 <span class="text-muted mx-2">{{ newPostText.length }}/{{ maxLength }}</span>&nbsp;
-                <b-button variant="primary" @click="attemptPost" :disabled="!postGood">Post</b-button>
+                <b-button
+                        variant="primary"
+                        @click="attemptPost"
+                        :disabled="!postGood"
+                        title="You can also use ctrl+enter"
+                >
+                    Post
+                </b-button>
             </div>
 
         </b-form>

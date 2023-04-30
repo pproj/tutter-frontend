@@ -3,7 +3,7 @@
         <div class="my-3 text-center" v-if="livingInPast">
             <b-button block variant="primary" @click="onBackToTheFutureClicked">Back to the future!</b-button>
         </div>
-        <single-post-card class="my-3" v-for="post in posts" :key="post.id" :post-data="post"/>
+        <single-post-card class="my-3" v-for="post in posts" :key="post.id" :post-data="post" :animate="post._meta !== undefined && post._meta.animate"/>
         <div class="my-3 text-center" v-if="loading">
             <b-spinner variant="secondary"/>
         </div>
@@ -45,20 +45,81 @@ export default {
         return {
             lastScrollTop: 0,
             loading: true,
-            lastId: this.olderThan || null, // <- initial value
+            firstId: null, // <- first as in at the top of the page; used for polling
+            lastId: this.olderThan || null, // last as in bottom of the page; used for scrolling
             posts: [],
-            reachedOldest: false
+            reachedOldest: false,
+            pollRestartTimeout: null,
+            pollAbortController: null
         }
     },
     mounted() {
         this.triggerLoad(true).then(() => { // <- trigger initial load
+            if (this.posts.length > 0) { // should only return empty if there are absolutely no posts
+                this.firstId = this.posts[0].id
+            }
+            if (!this.livingInPast) {
+                this.startPolling()
+            }
             window.addEventListener('scroll', this.onScroll)
         })
     },
     beforeDestroy() {
+        if (!this.livingInPast) {
+            this.stopPolling()
+        }
         window.removeEventListener('scroll', this.onScroll)
     },
     methods: {
+        startPolling() {
+            let params = Object.assign({}, this.filters) // this is a shallow copy
+            if (this.firstId === null) {
+                console.warn("no posts loaded at the beginning of listen, WILL MISS a few posts!")
+            } else {
+                params['last'] = this.firstId
+            }
+            this.pollAbortController = new AbortController()
+            this.$api.get("poll", {params: params, signal: this.pollAbortController.signal}).then((resp) => {
+
+                if (resp.status === 204) {
+                    this.pollRestartTimeout = setTimeout(this.startPolling, 2000)
+                    return
+                } else if (resp.status !== 200) {
+                    this.pollRestartTimeout = setTimeout(this.startPolling, 5000)
+                    return
+                }
+                if (resp.data.length === 0) { // this is actually a bug in the backend, whatever...
+                    this.pollRestartTimeout = setTimeout(this.startPolling, 5000)
+                    return
+                }
+
+                // push new posts at the top
+                let newPosts = [...resp.data] // shallow copy
+                newPosts = newPosts.map(p => ({...p, _meta: {animate: true}})) // this is a real-time post, we should animate it
+                newPosts.sort((a,b) => b.id - a.id) // desc
+                this.posts.unshift(...newPosts)
+
+                if (this.firstId < newPosts[0].id) {
+                    this.firstId = newPosts[0].id // hopefully this won't set a wrong value
+                }
+
+                this.pollRestartTimeout = setTimeout(this.startPolling, 500) // 0.5sec
+
+            }).catch((err) => {
+                if (err.code === "ERR_CANCELED") {
+                    // stopPolling is used
+                    return
+                }
+                console.error(err)
+                this.pollRestartTimeout = setTimeout(this.startPolling, 5000) // 5sec
+            })
+        },
+        stopPolling() {
+            clearTimeout(this.pollRestartTimeout) // <- this literally takes anything and does not cause any problem
+            if (this.pollAbortController !== null) {
+                this.pollAbortController.abort()
+            }
+        },
         onScroll() {
             if (this.lastScrollTop > document.documentElement.scrollTop) {
                 return // the user is going upstairs...
@@ -112,7 +173,6 @@ export default {
                         if (this.lastId === null || smallestId < this.lastId) {
                             this.lastId = smallestId
                         }
-
                     }
 
                     if (resp.data.length < BATCH_SIZE) {
@@ -140,13 +200,23 @@ export default {
         },
         restart() {
             this.loading = true
+            if (!this.livingInPast) {
+                this.stopPolling()
+            }
             window.removeEventListener('scroll', this.onScroll)
             window.scrollTo(0,0) // go upstairs
             this.lastScrollTop = 0
             this.posts = []
+            this.firstId = null
             this.lastId = this.olderThan || null
             this.reachedOldest = false
             this.triggerLoad(true).then(() => { // <- trigger initial load
+                if (this.posts.length > 0) { // should only return empty if there are absolutely no posts
+                    this.firstId = this.posts[0].id
+                }
+                if (!this.livingInPast) {
+                    this.startPolling()
+                }
                 window.addEventListener('scroll', this.onScroll)
             })
         }
