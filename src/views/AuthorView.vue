@@ -79,6 +79,7 @@ export default {
                     }
 
                     this.authorData = resp.data[0]
+                    this.authorId = this.authorData.id // this is not populated by the query param, but needed for the listing
                     this.authorExists = true
                 } else {
                     this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
