@@ -65,7 +65,7 @@ export default {
             return this.postData.tags.includes('important')
         },
         isWashingMachine() {
-            return this.postData.tags.includes('washingmachine')
+            return this.postData.tags.includes('washingmachine') || this.postData.text.toLowerCase().includes('brrr')
         },
         isRoflCopter() {
             return this.postData.tags.includes('roflcopter')
