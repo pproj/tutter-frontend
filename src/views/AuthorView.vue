@@ -26,6 +26,14 @@ import NotFoundArt from "@/components/NotFoundArt.vue";
 import NewPost from "@/components/NewPost.vue";
 import {useUserStore} from "@/stores/user";
 
+function isValidId(value) { // returns true if value is int (or a string that could be cast to int) and it is >=1
+    const parsed = parseInt(Number(value))
+    return !isNaN(value) &&
+        (parsed === value || String(parsed) === value) &&
+        !isNaN(parseInt(value, 10)) &&
+        parsed >= 1
+}
+
 export default {
     name: "AuthorView",
     components: {NewPost, Posts, NotFoundArt},
@@ -45,7 +53,7 @@ export default {
     },
     mounted() {
 
-        if (this.authorId !== undefined) {
+        if (this.authorId !== undefined && isValidId(this.authorId)) {
             this.$api.get("author/" + this.authorId, {params: {fill: false}}).then((resp) => {
                 if (resp.status === 200) {
                     this.authorData = resp.data
@@ -83,7 +91,7 @@ export default {
                 }
             })
         } else {
-            this.$router.push({name: 'home'}) // give up
+            this.$router.replace({name: 'home'}) // give up
         }
     },
     methods: {

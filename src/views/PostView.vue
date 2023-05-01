@@ -17,6 +17,14 @@ import NotFoundArt from "@/components/NotFoundArt.vue";
 import NewPost from "@/components/NewPost.vue";
 import SinglePostCard from "@/components/SinglePostCard.vue";
 
+function isValidId(value) { // returns true if value is int (or a string that could be cast to int) and it is >=1
+    const parsed = parseInt(Number(value))
+    return !isNaN(value) &&
+        (parsed === value || String(parsed) === value) &&
+        !isNaN(parseInt(value, 10)) &&
+        parsed >= 1
+}
+
 export default defineComponent({
     name: "PostView",
     components: {SinglePostCard, NewPost, NotFoundArt},
@@ -28,6 +36,12 @@ export default defineComponent({
         }
     },
     mounted() {
+
+        if (this.postId === undefined || !isValidId(this.postId)) {
+            this.$router.replace({name: 'home'})
+            return
+        }
+
         this.$api.get("post/" + this.postId).then((resp) => {
             if (resp.status === 200) {
                 this.postData = resp.data

@@ -19,24 +19,7 @@
         <b-row>
             <b-col class="my-2">
                 <div class="w-100 text-wrap text-justify">
-                    <b-link>#lofasz </b-link>
-                    <b-link>#lofas </b-link>
-                    <b-link>#lof </b-link>
-                    <b-link>#lofsz </b-link>
-                    <b-link>#lofaasz </b-link>
-                    <b-link>#lofaaasz </b-link>
-                    <b-link>#lofasz </b-link>
-                    <b-link>#lofas </b-link>
-                    <b-link>#lof </b-link>
-                    <b-link>#lofsz </b-link>
-                    <b-link>#lofaasz </b-link>
-                    <b-link>#lofaaasz </b-link>
-                    <b-link>#lofasz </b-link>
-                    <b-link>#lofas </b-link>
-                    <b-link>#lof </b-link>
-                    <b-link>#lofsz </b-link>
-                    <b-link>#lofaasz </b-link>
-                    <b-link>#lofaaasz </b-link>
+                    <template v-for="tag in trendingTags"><b-link :key="tag" :to="{name: 'tag', params: {tag}}" class="asd">#{{ tag }}</b-link>{{ ' ' }}</template>
                 </div>
             </b-col>
         </b-row>
@@ -55,6 +38,10 @@ export default {
         registerAllowed: {
             type: Boolean,
             default: true
+        },
+        trendingTags: {
+            type: Array,
+            required: true
         }
     },
     setup() { // bele kéne szarni az egészbe...

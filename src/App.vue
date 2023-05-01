@@ -1,11 +1,11 @@
 <template>
     <div id="app">
-        <tutter-header class="d-lg-none" :register-allowed="!isPresentationMode"/>
+        <tutter-header class="d-lg-none" :register-allowed="!isPresentationMode" :trending-tags="trendingTags"/>
         <b-container>
             <b-row>
                 <b-col lg="3" class="bv-d-md-down-none">
                     <div id="sidebarContainer">
-                        <tutter-sidebar :register-allowed="!isPresentationMode"/>
+                        <tutter-sidebar :register-allowed="!isPresentationMode" :trending-tags="trendingTags"/>
                     </div>
                 </b-col>
                 <b-col lg="9">
@@ -32,7 +32,9 @@ export default defineComponent({
     components: {TutterHeader, TutterSidebar},
     data() {
         return {
-            displayScrollToTop: false
+            displayScrollToTop: false,
+            trendingTagsUpdaterInterval: null,
+            trendingTags: []
         }
     },
     computed: {
@@ -44,10 +46,15 @@ export default defineComponent({
         if (!this.isPresentationMode) {
             window.addEventListener('scroll', this.onScroll)
         }
+        this.updateTrendingTags()
+        this.trendingTagsUpdaterInterval = setInterval(this.updateTrendingTags, 60000) // 1min
     },
     beforeDestroy() {
         if (!this.isPresentationMode) {
             window.removeEventListener('scroll', this.onScroll)
+        }
+        if (this.trendingTagsUpdaterInterval !== null) {
+            clearInterval(this.trendingTagsUpdaterInterval)
         }
     },
     methods: {
@@ -65,6 +72,15 @@ export default defineComponent({
             window.scrollTo({
                 top: 0,
                 behavior: "smooth"
+            })
+        },
+        updateTrendingTags() {
+            this.$api.get("trending", ).then((resp) => {
+                if (resp.status === 200) {
+                    this.trendingTags = resp.data
+                }
+            }).catch((err) => {
+                console.log(err)
             })
         }
     }
