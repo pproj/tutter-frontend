@@ -8,8 +8,7 @@
             <b-icon icon="exclamation-triangle-fill" variant="warning" class="mr-2" v-if="isWarning"/>
             <b-link
                     class="postAuthor"
-                    :to="{name: 'author', params: { id: postData.author.id }}">@{{ postData.author.name }}
-            </b-link>
+                    :to="{name: 'author', params: { id: postData.author.id }}">@{{ postData.author.name }}</b-link>
             <img
                 v-if="isVerfied"
                 src="@/assets/verified.svg"
@@ -31,14 +30,17 @@
             </span>
         </template>
         <b-card-body class="postText">
-            {{ postData.text }}
+            <parsed-post-text :post-text="postData.text" :expected-tags="postData.tags"/>
         </b-card-body>
     </b-card>
 </template>
 
 <script>
+import ParsedPostText from "@/components/ParsedPostText.vue";
+
 export default {
     name: "SinglePostCard",
+    components: {ParsedPostText},
     props: {
         postData: {
             type: Object,
