@@ -24,7 +24,7 @@ const router = new VueRouter({
       component: TagView
     },
     {
-      path: '/author/:id',
+      path: '/author/:id?',
       name: 'author',
       component: AuthorView
     },

@@ -1,7 +1,7 @@
 <template>
     <main v-if="authorExists === true" >
         <div class="my-5">
-            <h1 class="d-inline-block">@{{ authorData.name }}</h1>
+            <h1 class="d-inline-block">@{{ authorData.name }}</h1>&nbsp;<!-- this is needed, so it's easier to highlight the name -->
             <b-badge v-if="thisIsMe" class="align-top">That's you!</b-badge>
         </div>
         <div class="my-5" v-if="thisIsMe && !livingInPast">
@@ -44,20 +44,47 @@ export default {
         return {user: useUserStore()}
     },
     mounted() {
-        this.$api.get("author/" + this.authorId, { params: { fill: false } }).then((resp) => {
-            if (resp.status === 200) {
-                this.authorData = resp.data
-                this.authorExists = true
-            } else {
-                this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
-            }
-        }).catch((err) => {
-            if (err.code === "ERR_BAD_REQUEST" && err.response.status === 404) {
-                this.authorExists = false
-            } else {
-                this.$showToast(err.message)
-            }
-        })
+
+        if (this.authorId !== undefined) {
+            this.$api.get("author/" + this.authorId, {params: {fill: false}}).then((resp) => {
+                if (resp.status === 200) {
+                    this.authorData = resp.data
+                    this.authorExists = true
+                } else {
+                    this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
+                }
+            }).catch((err) => {
+                if (err.code === "ERR_BAD_REQUEST" && err.response.status === 404) {
+                    this.authorExists = false
+                } else {
+                    this.$showToast(err.message)
+                }
+            })
+        } else if (this.$route.query.n !== undefined) {
+            const nameToLookup = this.$route.query.n
+            this.$api.get("author", {params: {name: nameToLookup}}).then((resp) => {
+                if (resp.status === 200) {
+
+                    if (resp.data.length !== 1) {
+                        this.authorExists = false
+                        return
+                    }
+
+                    this.authorData = resp.data[0]
+                    this.authorExists = true
+                } else {
+                    this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
+                }
+            }).catch((err) => {
+                if (err.code === "ERR_BAD_REQUEST" && err.response.status === 404) {
+                    this.authorExists = false
+                } else {
+                    this.$showToast(err.message)
+                }
+            })
+        } else {
+            this.$router.push({name: 'home'}) // give up
+        }
     },
     methods: {
         onOlderRequested(olderThanId) {

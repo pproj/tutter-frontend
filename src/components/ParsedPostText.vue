@@ -3,9 +3,9 @@
     <article v-else>
         <template v-for="(token, idx) in tokens">
             <span :key="idx" v-if="token.type === 'text'">{{ token.text }}</span>
-            <span :key="idx" v-if="token.type === 'author'">{{ token.text }}</span> <!-- We would need backend support for that -->
             <b-link :key="idx" v-else-if="token.type === 'hyperlink'" :href="token.value">{{ token.text }}</b-link>
             <b-link :key="idx" v-else-if="token.type === 'tag'" :to="{name: 'tag', params: {tag: token.value}}">{{ token.text }}</b-link>
+            <b-link :key="idx" v-else-if="token.type === 'author'" :to="{name: 'author', query: {n: token.value}}">{{ token.text }}</b-link> <!-- We would need backend support for that -->
             <br :key="idx" v-else-if="token.type === 'newline'"/>
         </template>
     </article>
