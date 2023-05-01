@@ -14,7 +14,8 @@
                 v-if="isVerfied"
                 src="@/assets/verified.svg"
                 class="verifiedBadge align-self-center"
-                 alt="Verified badge"
+                alt="Verified badge"
+                title="This is a verified user"
             />
             <span class="text-muted float-right">
                 <b-link
@@ -22,6 +23,7 @@
                     v-if="allowPermalink"
                     v-show="hovered"
                     @click="onPermalinkClick"
+                    title="Permalink"
                 >
                     <b-icon icon="link45deg" />
                 </b-link>
