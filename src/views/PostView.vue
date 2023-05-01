@@ -1,6 +1,6 @@
 <template>
     <main class="my-5" v-if="postExists === true" >
-        <single-post-card :post-data="postData" :animate="false" />
+        <single-post-card :post-data="postData" :animate="false" :allow-permalink="false"/>
     </main>
     <main v-else-if="postExists === false" class="loweredMain">
         <not-found-art text="It seems like this post does not exists"/>

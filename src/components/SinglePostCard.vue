@@ -2,6 +2,7 @@
     <b-card :class="{'fade-in' : animate, 'centrifuge': isWashingMachine, 'rofl-copter': isRoflCopter}"
             :border-variant="cardVariant"
             :header-border-variant="cardVariant"
+            v-b-hover="handleCardHover"
     >
         <template #header>
             <b-icon icon="exclamation-triangle-fill" variant="warning" class="mr-2" v-if="isWarning"/>
@@ -9,9 +10,23 @@
                     class="postAuthor"
                     :to="{name: 'author', params: { id: postData.author.id }}">@{{ postData.author.name }}
             </b-link>
-            <img v-if="isVerfied" src="@/assets/verified.svg" class="verifiedBadge align-self-center"
-                 alt="Verified badge"/>
-            <span class="text-muted float-right">{{ postData.created_at | dateformat }}</span>
+            <img
+                v-if="isVerfied"
+                src="@/assets/verified.svg"
+                class="verifiedBadge align-self-center"
+                 alt="Verified badge"
+            />
+            <span class="text-muted float-right">
+                <b-link
+                    variant="link"
+                    v-if="allowPermalink"
+                    v-show="hovered"
+                    @click="onPermalinkClick"
+                >
+                    <b-icon icon="link45deg" />
+                </b-link>
+                {{ postData.created_at | dateformat }}
+            </span>
         </template>
         <b-card-body class="postText">
             {{ postData.text }}
@@ -30,6 +45,15 @@ export default {
         animate: {
             type: Boolean,
             default: false
+        },
+        allowPermalink: {
+            type: Boolean,
+            default: true
+        }
+    },
+    data() {
+        return {
+            hovered: false
         }
     },
     computed: {
@@ -57,6 +81,14 @@ export default {
             } else {
                 return ""
             }
+        }
+    },
+    methods: {
+        onPermalinkClick() {
+            this.$router.push({name: 'post', params: {id: this.postData.id}})
+        },
+        handleCardHover(hovered) {
+            this.hovered = hovered
         }
     }
 }
