@@ -3,7 +3,13 @@
         <div class="my-3 text-center" v-if="livingInPast">
             <b-button block variant="primary" @click="onBackToTheFutureClicked">Back to the future!</b-button>
         </div>
-        <single-post-card class="my-3" v-for="post in posts" :key="post.id" :post-data="post" :animate="post._meta !== undefined && post._meta.animate"/>
+        <single-post-card
+            class="my-3"
+            v-for="post in posts"
+            :key="post.id"
+            :post-data="post"
+            :animate="post._meta !== undefined && post._meta.animate"
+        />
         <div class="my-3 text-center" v-if="loading">
             <b-spinner variant="secondary"/>
         </div>
@@ -72,17 +78,32 @@ export default {
     },
     methods: {
         startPolling() {
+            // Note: Restarts should always use timeout, to prevent flooding the server with requests
+
+            // compile params
             let params = Object.assign({}, this.filters) // this is a shallow copy
             if (this.firstId === null) {
                 console.warn("no posts loaded at the beginning of listen, WILL MISS a few posts!")
             } else {
                 params['last'] = this.firstId
             }
+
+            /*
+                the following is another ugly hack:
+                If we could not determine the "last" parameter for the query and the poll times out,
+                we restart it quicker to lower the chance of missing a post
+
+                it is still possible to miss a post tho
+             */
+            const quickRetryHack = this.firstId === null // <- enable quick retry hack
+
+            // Start request
             this.pollAbortController = new AbortController()
             this.$api.get("poll", {params: params, signal: this.pollAbortController.signal}).then((resp) => {
 
-                if (resp.status === 204) {
-                    this.pollRestartTimeout = setTimeout(this.startPolling, 2000)
+                // return if we don't need to do anything
+                if (resp.status === 204) { // poll time expired, no new posts received
+                    this.pollRestartTimeout = setTimeout(this.startPolling, quickRetryHack ? 0 : 2000) // if quick retry hack enabled, restart the poll quicker (set timeout with 0 as timeout is valid actually)
                     return
                 } else if (resp.status !== 200) {
                     this.pollRestartTimeout = setTimeout(this.startPolling, 5000)
@@ -93,16 +114,49 @@ export default {
                     return
                 }
 
+                // record current scroll positions
+                const scrollHeightBefore = document.documentElement.scrollHeight
+                const scrollTopBefore = document.documentElement.scrollTop
+
                 // push new posts at the top
                 let newPosts = [...resp.data] // shallow copy
                 newPosts = newPosts.map(p => ({...p, _meta: {animate: true}})) // this is a real-time post, we should animate it
-                newPosts.sort((a,b) => b.id - a.id) // desc
+                newPosts.sort((a, b) => b.id - a.id) // desc
                 this.posts.unshift(...newPosts)
 
+                // keep scroll hack
+                /*
+                    This is yet another ugly hack, if inserting a new post causes the view to be scrolled*,
+                    we quickly scroll it back, so it may appear that the posts stayed in place.
+
+                    *Yes, sometimes the browser does this scroll for us, in these cases, we shouldn't double-scroll
+
+                    +/- 1px shift may still happen due to some weird web reason, but that's not that disturbing
+                 */
+                if (document.documentElement.scrollTop > document.documentElement.clientHeight * 0.75) { // <- only do this if we are already scrolled
+                    // well, this is a hack, it lets the view scroll past, then scrolls it back... it happens real quick, so the user shouldn't notice
+                    this.$nextTick(() => {
+                        const autoScrolled = document.documentElement.scrollTop - scrollTopBefore // sometimes the browser does this for us
+                        const shouldScroll = (document.documentElement.scrollHeight - scrollHeightBefore) - autoScrolled
+                        if (Math.abs(shouldScroll) > 1) {
+                            const newScrollTop = document.documentElement.scrollTop + shouldScroll
+                            // If the following does not work, change it to another one:
+                            //document.documentElement.scrollTop = newScrollTop
+                            //window.scrollY = newScrollTop
+                            window.scrollTo({
+                                top: newScrollTop,
+                                behavior: "instant"
+                            })
+                        }
+                    })
+                }
+
+                // update first id
                 if (this.firstId < newPosts[0].id) {
                     this.firstId = newPosts[0].id // hopefully this won't set a wrong value
                 }
 
+                // done
                 this.pollRestartTimeout = setTimeout(this.startPolling, 500) // 0.5sec
 
             }).catch((err) => {
@@ -152,7 +206,7 @@ export default {
                 params['limit'] = BATCH_SIZE
                 params['order'] = 'desc'
 
-                this.$api.get("post",{params: params}).then((resp) => {
+                this.$api.get("post", {params: params}).then((resp) => {
 
                     if (resp.status !== 200) {
                         this.$showToast(`Unexpected status: ${resp.status} ${resp.statusText}`)
@@ -204,7 +258,7 @@ export default {
                 this.stopPolling()
             }
             window.removeEventListener('scroll', this.onScroll)
-            window.scrollTo(0,0) // go upstairs
+            window.scrollTo(0, 0) // go upstairs
             this.lastScrollTop = 0
             this.posts = []
             this.firstId = null
