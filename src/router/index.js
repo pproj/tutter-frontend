@@ -5,6 +5,7 @@ import TagView from "@/views/TagView.vue";
 import AuthorView from "@/views/AuthorView.vue";
 import NotFoundView from "@/views/NotFoundView.vue";
 import PresentationView from "@/views/PresentationView.vue";
+import PostView from "@/views/PostView.vue";
 
 Vue.use(VueRouter)
 
@@ -26,6 +27,11 @@ const router = new VueRouter({
       path: '/author/:id',
       name: 'author',
       component: AuthorView
+    },
+    {
+      path: '/post/:id',
+      name: 'post',
+      component: PostView
     },
     {
       path: "/presentation",
