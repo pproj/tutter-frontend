@@ -56,7 +56,11 @@ export default {
             posts: [],
             reachedOldest: false,
             pollRestartTimeout: null,
-            pollAbortController: null
+            pollAbortController: null,
+            // cleanup job state
+            scrolledUp: true,
+            scrolledUpSince: new Date(),
+            cleanupInterval: null
         }
     },
     mounted() {
@@ -69,12 +73,16 @@ export default {
             }
             window.addEventListener('scroll', this.onScroll)
         })
+        this.cleanupInterval = setInterval(this.runCleanup, 10000)
     },
     beforeDestroy() {
         if (!this.livingInPast) {
             this.stopPolling()
         }
         window.removeEventListener('scroll', this.onScroll)
+        if (this.cleanupInterval !== null) {
+            clearInterval(this.cleanupInterval)
+        }
     },
     methods: {
         startPolling() {
@@ -175,15 +183,27 @@ export default {
             }
         },
         onScroll() {
-            if (this.lastScrollTop > document.documentElement.scrollTop) {
-                return // the user is going upstairs...
-            }
+            const dir = document.documentElement.scrollTop - this.lastScrollTop
             this.lastScrollTop = document.documentElement.scrollTop
-
-            // The user is going downstairs, may trigger load now...
-            const remainingPx = document.documentElement.scrollHeight - (document.documentElement.scrollTop + document.documentElement.clientHeight)
-            if (remainingPx < 100 && !this.loading && this.shouldAutoLoadMore) {
-                this.triggerLoad()
+            if (dir < 0) {
+                // the user is going upstairs...
+                if (document.documentElement.scrollTop < document.documentElement.clientHeight*1.2) {
+                    // at the "top"
+                    if (!this.scrolledUp) {
+                        this.lastScrollTop = new Date()
+                        this.scrolledUp = true
+                    }
+                }
+            } else {
+                // The user is going downstairs, may trigger load now...
+                const remainingPx = document.documentElement.scrollHeight - (document.documentElement.scrollTop + document.documentElement.clientHeight)
+                if (remainingPx < 100 && !this.loading && this.shouldAutoLoadMore) {
+                    this.triggerLoad()
+                }
+                if (document.documentElement.scrollTop >= document.documentElement.clientHeight*1.2) {
+                    // left the top
+                    this.scrolledUp = false
+                }
             }
         },
         triggerLoad(force = false) {
@@ -241,10 +261,20 @@ export default {
                 })
             })
         },
-        cleanup() {
-            // TODO: Figure out out of focus posts
-            // TODO: Remove old posts not in focus
-            // TODO: Clear reachedOldest
+        runCleanup() {
+            if (!this.scrolledUp) {
+                return
+            }
+            const beenUpThereSince = (new Date()) - this.scrolledUpSince // returns milliseconds
+            if (beenUpThereSince < 7000) {
+                return
+            }
+
+            // time to cleanup...
+            const postsToRemove = this.posts.length - BATCH_SIZE // keep one batch loaded only
+            if (postsToRemove > 0) {
+                this.posts.splice(-postsToRemove)
+            }
         },
         onLoadOlderClicked() {
             this.$emit("olderRequested", this.lastId)
@@ -254,16 +284,30 @@ export default {
         },
         restart() {
             this.loading = true
+
+            // unregister everything
             if (!this.livingInPast) {
                 this.stopPolling()
             }
             window.removeEventListener('scroll', this.onScroll)
+
+            if (this.cleanupInterval !== null) {
+                clearInterval(this.cleanupInterval)
+            }
+
+            // scroll up
             window.scrollTo(0, 0) // go upstairs
+
+            // reset vals
             this.lastScrollTop = 0
             this.posts = []
             this.firstId = null
             this.lastId = this.olderThan || null
             this.reachedOldest = false
+            this.scrolledUp = true
+            this.scrolledUpSince = new Date()
+
+            // re-register stuff
             this.triggerLoad(true).then(() => { // <- trigger initial load
                 if (this.posts.length > 0) { // should only return empty if there are absolutely no posts
                     this.firstId = this.posts[0].id
@@ -273,6 +317,7 @@ export default {
                 }
                 window.addEventListener('scroll', this.onScroll)
             })
+            this.cleanupInterval = setInterval(this.runCleanup, 10000)
         }
     },
     computed: {
