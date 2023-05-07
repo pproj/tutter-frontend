@@ -47,7 +47,7 @@ export default defineComponent({
             window.addEventListener('scroll', this.onScroll)
         }
         this.updateTrendingTags()
-        this.trendingTagsUpdaterInterval = setInterval(this.updateTrendingTags, 60000) // 1min
+        this.trendingTagsUpdaterInterval = setInterval(this.updateTrendingTags, 120000) // 2min
     },
     beforeDestroy() {
         if (!this.isPresentationMode) {
