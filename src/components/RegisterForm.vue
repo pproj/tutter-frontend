@@ -1,6 +1,6 @@
 <template>
 
-    <b-form>
+    <b-form @submit.prevent="setUsername">
         <b-form-group
                 id="input-group-username"
                 label="Username:"
@@ -14,7 +14,13 @@
                     placeholder="Anonymous"
                     maxlength="32"
                     required
+                    :state="feedback"
+                    @change="onChange"
+                    @input="onInput"
             ></b-form-input>
+            <b-form-invalid-feedback :state="feedback">
+                Must be maximum 32 characters and can contain only the following characters: a-z, 0-9, and _
+            </b-form-invalid-feedback>
         </b-form-group>
         <b-button variant="success" size="sm" class="float-right" :disabled="!usernameValid" @click="setUsername">
             Register!
@@ -31,7 +37,8 @@ export default {
     name: "RegisterForm",
     data() {
         return {
-            usernameInput: ""
+            usernameInput: "",
+            feedback: null
         }
     },
     setup() { // bele kéne szarni az egészbe...
@@ -42,6 +49,15 @@ export default {
             if (this.usernameValid) {
                 this.user.setUsername(this.usernameInput)
                 this.$emit("registered", this.user.username)
+                this.$showToast(`Hello ${this.usernameInput}! Welcome to Tutter!`, 'success', 'Registered', false)
+            }
+        },
+        onChange() {
+            this.feedback = this.usernameValid
+        },
+        onInput() {
+            if (this.feedback !== null) {
+                this.feedback = this.usernameValid
             }
         }
     },
