@@ -62,7 +62,8 @@ export default {
                     for (const m of workText.matchAll(r)) {
 
                         if (k === "tag") {
-                            if (!this.expectedTags.includes(m[0].slice(1))) {
+                            const tagName = m[0].slice(1).toLowerCase()
+                            if (!this.expectedTags.includes(tagName)) {
                                 // If the backed does not agree that this is tag is in the post, we just ignore it
                                 continue
                             }
@@ -79,7 +80,7 @@ export default {
                     }
                 })
 
-                this.$emit("authorsIdentified", identifiedAuthors)
+                this.$emit("authorsIdentified", identifiedAuthors) // we may need this data to format the card TODO: Remove when the backend ready to handle this
 
                 // It would be overkill to use regexp to match newlines
                 let i = -1
@@ -125,7 +126,7 @@ export default {
                     switch (token.type) { // these tokens may require a value token
                         case "author":
                         case "tag":
-                            token.value = tokenText.slice(1) // remove hashmark or @ sign
+                            token.value = tokenText.slice(1).toLowerCase() // remove hashmark or @ sign
                             break;
                         case "hyperlink":
                             if (m.match[1] === undefined) { // missing protocol
