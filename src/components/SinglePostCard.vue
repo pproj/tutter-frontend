@@ -30,13 +30,18 @@
             </span>
         </template>
         <b-card-body class="postText">
-            <parsed-post-text :post-text="postData.text" :expected-tags="postData.tags"/>
+            <parsed-post-text
+                @authorsIdentified="onAuthorsIdentified"
+                :post-text="postData.text"
+                :expected-tags="postData.tags"
+            />
         </b-card-body>
     </b-card>
 </template>
 
 <script>
 import ParsedPostText from "@/components/ParsedPostText.vue";
+import {useUserStore} from "@/stores/user";
 
 export default {
     name: "SinglePostCard",
@@ -57,8 +62,12 @@ export default {
     },
     data() {
         return {
-            hovered: false
+            hovered: false,
+            authorsIdentified: []
         }
+    },
+    setup() { // bele kéne szarni az egészbe...
+        return {user: useUserStore()}
     },
     computed: {
         // Easter eggs:
@@ -74,8 +83,20 @@ export default {
         isRoflCopter() {
             return this.postData.tags.includes('roflcopter')
         },
+        isToMe() {
+            if (!this.user.isUsernameSet) {
+                return false
+            }
+            return this.authorsIdentified.includes(this.user.username)
+        },
         cardVariant() {
-            return this.isWarning ? "warning" : ""
+            if (this.isWarning) {
+                return "warning"
+            }
+            if (this.isToMe) {
+                return "info"
+            }
+            return ""
         }
     },
     filters: {
@@ -90,6 +111,9 @@ export default {
     methods: {
         handleCardHover(hovered) {
             this.hovered = hovered
+        },
+        onAuthorsIdentified(identifiedAuthors) {
+            this.authorsIdentified = identifiedAuthors
         }
     }
 }

@@ -55,6 +55,7 @@ export default {
                 let workText = this.postText
 
                 let matches = []
+                let identifiedAuthors = []
 
                 Object.keys(REGEXP_MATCHERS).forEach((k) => {
                     const r = REGEXP_MATCHERS[k]
@@ -67,12 +68,18 @@ export default {
                             }
                         }
 
+                        if (k === "author") {
+                            identifiedAuthors.push(m[0].slice(1))
+                        }
+
                         matches.push({
                             type: k,
                             match: m
                         })
                     }
                 })
+
+                this.$emit("authorsIdentified", identifiedAuthors)
 
                 // It would be overkill to use regexp to match newlines
                 let i = -1
