@@ -9,5 +9,5 @@
     "background_color":"#ffffff",
     "display":"standalone",
     "description": "Twitter clone for locally organized events",
-    "start_url": ".",
+    "start_url": "."
 }
