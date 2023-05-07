@@ -21,7 +21,7 @@
                     variant="link"
                     v-if="allowPermalink"
                     v-show="hovered"
-                    @click="onPermalinkClick"
+                    :to="{name: 'post', params: {id: postData.id}}"
                     title="Permalink"
                 >
                     <b-icon icon="link45deg" />
@@ -88,9 +88,6 @@ export default {
         }
     },
     methods: {
-        onPermalinkClick() {
-            this.$router.push({name: 'post', params: {id: this.postData.id}})
-        },
         handleCardHover(hovered) {
             this.hovered = hovered
         }
