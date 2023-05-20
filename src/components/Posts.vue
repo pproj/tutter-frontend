@@ -270,11 +270,26 @@ export default {
                 return
             }
 
-            // time to cleanup...
+
             const postsToRemove = this.posts.length - BATCH_SIZE // keep one batch loaded only
-            if (postsToRemove > 0) {
-                this.posts.splice(-postsToRemove)
+            if (postsToRemove <= 0) {
+              return;
             }
+
+            // time to cleanup...
+            this.posts.splice(-postsToRemove)
+
+            // update scroll vars to fix scrolling
+            this.reachedOldest = false // can not possibly have reached the oldest if there are posts to be removed
+            // also the last id have to be updated as well
+            let smallestId = +Infinity
+            this.posts.forEach((p) => {
+              if (p.id < smallestId) {
+                smallestId = p.id
+              }
+            })
+            this.lastId = smallestId
+
         },
         onLoadOlderClicked() {
             this.$emit("olderRequested", this.lastId)
