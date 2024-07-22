@@ -22,11 +22,15 @@
         </div>
         <div id="tutterFooter" class="text-center">
             Carefully crafted for
-            <b-link href="https://pproj.net">PP 2023</b-link>
+            <b-link href="https://pproj.net">PP Projekt</b-link>
             <br>
             <small>
                 <b-link href="/api">API Docs</b-link>
             </small>
+          <br>
+          <small class="text-muted">
+          2023 - 2024
+          </small>
         </div>
     </div>
 </template>
