@@ -111,14 +111,14 @@ export default {
 
                 // return if we don't need to do anything
                 if (resp.status === 204) { // poll time expired, no new posts received
-                    this.pollRestartTimeout = setTimeout(this.startPolling, quickRetryHack ? 0 : 2000) // if quick retry hack enabled, restart the poll quicker (set timeout with 0 as timeout is valid actually)
+                    this.pollRestartTimeout = setTimeout(this.startPolling, quickRetryHack ? 0 : 100) // if quick retry hack enabled, restart the poll quicker (set timeout with 0 as timeout is valid actually)
                     return
                 } else if (resp.status !== 200) {
-                    this.pollRestartTimeout = setTimeout(this.startPolling, 5000)
+                    this.pollRestartTimeout = setTimeout(this.startPolling, 1500)
                     return
                 }
                 if (resp.data.length === 0) { // this is actually a bug in the backend, whatever...
-                    this.pollRestartTimeout = setTimeout(this.startPolling, 5000)
+                    this.pollRestartTimeout = setTimeout(this.startPolling, 1500)
                     return
                 }
 
