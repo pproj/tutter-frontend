@@ -29,7 +29,7 @@
             </small>
           <br>
           <small class="text-muted">
-          2023 - 2025
+          2023 - 2026
           </small>
         </div>
     </div>
